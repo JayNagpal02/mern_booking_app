@@ -25,7 +25,7 @@ export type HotelFormData = {
 
 // Define the props for the ManageHotelForm component
 type Props = {
-    hotel: HotelType;
+    hotel?: HotelType; // Optional hotel object, used for editing existing hotel
     onSave: (hotelFormData: FormData) => void; // Function to handle saving hotel data
     isLoading: boolean; // Flag indicating whether the form is in a loading state
 };
@@ -33,19 +33,21 @@ type Props = {
 // Component for managing hotel form data
 const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
     // Initialize form methods using react-hook-form
-    const formMethods = useForm<HotelFormData>();
-    const { handleSubmit, reset } = formMethods;
+    const formMethods = useForm<HotelFormData>(); // useForm hook to create form methods
+    const { handleSubmit, reset } = formMethods; // Destructure handleSubmit and reset methods
 
     useEffect(() => {
-        reset(hotel);
-    }, [hotel, reset]);
+        reset(hotel); // Reset form values when hotel data changes
+    }, [hotel, reset]); // Dependency array to trigger effect when hotel or reset method changes
 
     // Handle form submission
     const onSubmit = handleSubmit((formDataJson: HotelFormData) => {
-        console.log(formDataJson);
-
         // Create a new FormData object to send form data as multipart/form-data
         const fd = new FormData();
+
+        if (hotel) {
+            fd.append("hotelId", hotel._id); // Append hotel ID if editing existing hotel
+        }
 
         // Append string fields to the FormData object
         fd.append("name", formDataJson.name);
@@ -63,6 +65,13 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
             fd.append(`facilities[${index}]`, facility);
         });
 
+        // Append image URLs to FormData object
+        if (formDataJson.imageUrls) {
+            formDataJson.imageUrls.forEach((url, index) => {
+                fd.append(`imageUrls[${index}]`, url);
+            });
+        }
+
         // Append image files to FormData object
         Array.from(formDataJson.imageFiles).forEach((imageFile) => {
             fd.append(`imageFiles`, imageFile);
@@ -71,6 +80,7 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
         onSave(fd); // Send FormData object to onSave function
     });
 
+    // Render form sections and submit button
     return (
         <FormProvider {...formMethods}>
             <form className="flex flex-col gap-10" onSubmit={onSubmit}>
@@ -96,4 +106,4 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
     );
 };
 
-export default ManageHotelForm;
+export default ManageHotelForm; // Export ManageHotelForm component

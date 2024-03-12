@@ -80,10 +80,50 @@ test("should display hotels", async ({ page }) => {
     ).toBeVisible();
     await expect(page.getByText("Matheran, India")).toBeVisible();
     await expect(page.getByText("Family")).toBeVisible();
-    await expect(page.getByText("₹100 per night")).toBeVisible();
+    await expect(page.getByText("₹100 per night").first()).toBeVisible();
     await expect(page.getByText("4 adults, 4 children")).toBeVisible();
     await expect(page.getByText("4 Star Rating")).toBeVisible();
     await expect(
-        page.getByRole("link", { name: "View Details" })
+        page.getByRole("link", { name: "View Details" }).first()
     ).toBeVisible();
+});
+
+test("should edit hotel", async ({ page }) => {
+    // Navigate to the page displaying user's hotels
+    await page.goto(`${UI_URL}my-hotels`);
+
+    // Click on the "View Details" link of the first hotel
+    await page.getByRole("link", { name: "View Details" }).first().click();
+
+    // Wait for the name input field to be attached
+    await page.waitForSelector('[name="name"]', { state: "attached" });
+
+    // Verify that the name input field initially contains "Horse Land"
+    await expect(page.locator('[name="name"]')).toHaveValue("Horse Land");
+
+    // Modify the value of the name input field to "Horse Land Updated"
+    await page.locator('[name="name"]').fill("Horse Land Updated");
+
+    // Click on the "Save" button to update the hotel
+    await page.getByRole("button", { name: "Save" }).click();
+
+    // Verify that the success message "Hotel Updated!" is visible after saving
+    await expect(page.getByText("Hotel Updated!")).toBeVisible();
+
+    // Reload the page
+    await page.reload();
+
+    // Verify that the name input field now contains "Horse Land Updated" after reloading
+    await expect(page.locator('[name="name"]')).toHaveValue(
+        "Horse Land Updated"
+    );
+
+    // Revert the name back to "Horse Land"
+    await page.locator('[name="name"]').fill("Horse Land");
+
+    // Click on the "Save" button again to update the hotel with the original name
+    await page.getByRole("button", { name: "Save" }).click();
+
+    // Verify that the success message "Hotel Updated!" is visible after saving with the original name
+    await expect(page.getByText("Hotel Updated!")).toBeVisible();
 });

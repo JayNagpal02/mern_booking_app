@@ -84,6 +84,10 @@ router.post(
     }
 );
 
+/**
+ * GET endpoint to fetch all hotels associated with the authenticated user.
+ * Protected by authentication middleware to ensure only authenticated users can access.
+ */
 router.get("/", verifyToken, async (req: Request, res: Response) => {
     try {
         const hotels = await Hotel.find({ userId: req.userId });
@@ -93,6 +97,10 @@ router.get("/", verifyToken, async (req: Request, res: Response) => {
     }
 });
 
+/**
+ * GET endpoint to fetch a specific hotel by its ID.
+ * Protected by authentication middleware to ensure only authenticated users can access.
+ */
 router.get("/:id", verifyToken, async (req: Request, res: Response) => {
     const id = req.params.id.toString();
     try {
@@ -103,6 +111,60 @@ router.get("/:id", verifyToken, async (req: Request, res: Response) => {
     }
 });
 
+/**
+ * PUT endpoint to update a specific hotel by its ID.
+ * Protected by authentication middleware to ensure only authenticated users can access.
+ * Handles file uploads using multer middleware.
+ */
+router.put(
+    "/:hotelId",
+    verifyToken,
+    upload.array("imageFiles"),
+    async (req: Request, res: Response) => {
+        try {
+            const updatedHotel: HotelType = req.body;
+            updatedHotel.lastUpdated = new Date();
+
+            // finding and updating the hotel
+            const hotel = await Hotel.findOneAndUpdate(
+                {
+                    _id: req.params.hotelId,
+                    userId: req.userId,
+                },
+                updatedHotel,
+                { new: true }
+            );
+
+            // if no hotel is found, returns error message
+            if (!hotel) {
+                return res.status(404).json({ message: "Hotel not found" });
+            }
+
+            // adding new images to cloudinary
+            const files = req.files as Express.Multer.File[];
+            const updatedImageUrls = await uploadImages(files);
+
+            hotel.imageUrls = [
+                // appending urls of new images added by the user
+                ...updatedImageUrls,
+                // appending urls of existing images
+                ...(updatedHotel.imageUrls || []),
+            ];
+
+            // save the hotel with new data
+            await hotel.save();
+
+            // return hotel object
+            res.status(201).json(hotel);
+        } catch (error) {
+            res.status(500).json({ message: "Something went throw" });
+        }
+    }
+);
+
+/**
+ * Helper function to upload images to cloudinary.
+ */
 async function uploadImages(imageFiles: Express.Multer.File[]) {
     const uploadPromises = imageFiles.map(async (image) => {
         const b64 = Buffer.from(image.buffer).toString("base64");
