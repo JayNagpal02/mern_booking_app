@@ -1,0 +1,4 @@
+/* this is importing all the things we need for tailwind to work into 'index.css' */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
