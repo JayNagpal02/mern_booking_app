@@ -1,5 +1,3 @@
-import exp from "constants";
-
 // Define the type for hotel data
 export type HotelType = {
     _id: string;
