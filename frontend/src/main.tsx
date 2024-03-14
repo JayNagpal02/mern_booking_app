@@ -4,6 +4,7 @@ import App from "./App.tsx";
 import "./index.css";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { AppContextProvider } from "./contexts/AppContext.tsx";
+import { SearchContextProvider } from "./contexts/SearchContext.tsx";
 
 // Create a new instance of QueryClient with default options
 const queryClient = new QueryClient({
@@ -26,7 +27,12 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                 Wrapping App component with AppContextProvider to provide access to Global State 
             */}
             <AppContextProvider>
-                <App />
+                {/* 
+                    Wrapping App component with SearchContextProvider to provide access to Global State 
+                */}
+                <SearchContextProvider>
+                    <App />
+                </SearchContextProvider>
             </AppContextProvider>
         </QueryClientProvider>
     </React.StrictMode>
