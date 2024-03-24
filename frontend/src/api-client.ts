@@ -219,3 +219,23 @@ export const searchHotels = async (
 
     return response.json();
 };
+
+/**
+ * Function to fetch a specific hotel by ID from the API.
+ * @param hotelId The ID of the hotel to fetch.
+ * @throws Error if there is an error fetching the hotel.
+ * @returns Promise resolved with the hotel data.
+ */
+export const fetchHotelById = async (hotelId: string): Promise<HotelType> => {
+    // Fetch the hotel data from the API using the provided hotelId
+    const response = await fetch(`${API_BASE_URL}/api/hotels/${hotelId}`);
+
+    // Check if the response is not successful (HTTP status code other than 2xx)
+    if (!response.ok) {
+        // Throw an error indicating the failure to fetch the hotel
+        throw new Error("Error fetching Hotel");
+    }
+
+    // If the response is successful, parse and return the JSON data
+    return response.json();
+};

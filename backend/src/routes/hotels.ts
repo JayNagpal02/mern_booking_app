@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+import { param, validationResult } from "express-validator";
 
 import Hotel from "../models/hotel";
 import { HotelSearchResponse } from "../shared/types";
@@ -63,6 +64,35 @@ router.get("/search", async (req: Request, res: Response) => {
         res.status(500).json({ message: "Something went wrong" });
     }
 });
+
+// /api/hotels/<hotelId>
+// Endpoint to get a specific hotel by ID
+router.get(
+    "/:id",
+    // Validation middleware using express-validator to ensure the ID parameter is not empty
+    [param("id").notEmpty().withMessage("Hotel ID is required")],
+    async (req: Request, res: Response) => {
+        // Check for validation errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return a 400 Bad Request response with validation errors if any
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        // Extract the hotel ID from the request parameters
+        const id = req.params.id.toString();
+        try {
+            // Attempt to find the hotel by its ID in the database
+            const hotel = await Hotel.findById(id);
+            // Respond with the hotel data if found
+            res.json(hotel);
+        } catch (error) {
+            // Handle any errors that occur during the database query
+            console.log(error);
+            res.status(500).json({ message: "Error fetching hotel" });
+        }
+    }
+);
 
 // Filter logic
 // Function to construct the search query based on the request parameters

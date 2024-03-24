@@ -37,3 +37,21 @@ test("should show hotel search results", async ({ page }) => {
     await expect(page.getByText("Hotels found in Matheran")).toBeVisible();
     await expect(page.getByText("Horse Land")).toBeVisible();
 });
+
+test("should show hotel detail", async ({ page }) => {
+    // Navigate to the UI_URL
+    await page.goto(UI_URL);
+
+    // Fill in the destination field and click search
+    await page.getByPlaceholder("Where are you going?").fill("Matheran");
+    await page.getByRole("button", { name: "Search" }).click();
+
+    // Click on the hotel name to view details
+    await page.getByText("Horse Land").click();
+
+    // Check if the URL contains "/detail/"
+    await expect(page).toHaveURL(/detail/);
+
+    // Check if the "Book Now" button is visible on the detail page
+    await expect(page.getByRole("button", { name: "Book Now" })).toBeVisible();
+});

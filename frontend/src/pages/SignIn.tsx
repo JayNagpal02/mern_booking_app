@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "react-query";
 import * as apiClient from "../api-client.ts";
 import { useAppContext } from "../contexts/AppContext";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 // Define type for form data
 export type SignInFormData = {
@@ -24,6 +24,9 @@ const SignIn = () => {
     // App context hook for accessing global state and functions
     const { showToast } = useAppContext();
 
+    // React Router hook for accessing the current location
+    const location = useLocation();
+
     // useForm hook for managing form state and validation
     const {
         register,
@@ -40,7 +43,8 @@ const SignIn = () => {
             showToast({ message: "Sign in Success!", type: "SUCCESS" });
             // Invalidate the validateToken query to trigger a refetch
             await queryClient.invalidateQueries("validateToken");
-            navigate("/");
+            // Navigate the user to the previous page or root path if no previous location is available
+            navigate(location.state?.form?.pathname || "/");
         },
         // onError callback when an error occurs during login
         onError: (error: Error) => {
